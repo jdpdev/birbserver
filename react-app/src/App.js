@@ -9,6 +9,7 @@ function App() {
   const [picGroups, setPicGroups] = useState([]);
   const [viewImage, setViewImage] = useState(null);
   const [updateTime, setUpdateTime] = useState(Date.now())
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const nextPicture = () => {
     let index = birdPics.findIndex(bp => bp.name === viewImage);
@@ -62,7 +63,10 @@ function App() {
                   group={pg}
                   birdPics={birdPics} 
                   dates={picDates}
-                  onClick={(index) => setViewImage(birdPics[index].name)} 
+                  onClick={(index) => {
+                    setViewImage(birdPics[index].name)
+                    setIsViewerOpen(true)
+                  }} 
                   selectedPic={viewImage}
                 />
               ))
@@ -72,7 +76,8 @@ function App() {
       </div>
       <ImageViewer 
         name={viewImage} 
-        onClose={() => {}} 
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)} 
         onNext={nextPicture}
         onPrevious={previousPicture}
       />
@@ -126,17 +131,8 @@ function ImagePreviewItem({birdPic, date, onClick, isSelected}) {
   )
 }
 
-function ImageViewer({name, onClose, onNext, onPrevious}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    if (name != null && !isOpen) {
-      setIsOpen(true);
-    }
-  }, [name]);
-
+function ImageViewer({name, isOpen, onClose, onNext, onPrevious}) {
   const close = () => {
-    setIsOpen(false);
     onClose();
   }
 

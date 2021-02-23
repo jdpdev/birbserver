@@ -24,7 +24,12 @@ body {
 
 .image-group {
   padding: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 0px;
+}
+
+.image-group h5 {
+  margin-top: 0px;
+  margin-bottom: 4px;
 }
 
 .image-group .group-images {
@@ -41,7 +46,7 @@ body {
   height: 100px;
 }
 
-.image-group .group-images .image-preview-item.is-selected {
+.image-group .group-images .image-preview-item.is-selected img {
   border: 2px solid blueviolet;
 }
 
@@ -122,7 +127,7 @@ li {
   cursor: pointer;
 }
 
-li.viewed-image {
+li.viewed-image img {
   font-weight: bold;
   color: blueviolet;
 }
