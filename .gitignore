@@ -1,0 +1,8 @@
+# created by virtualenv automatically
+/react-app/build
+/react-app/node_modules
+/node_modules
+/debug
+/birbwatcher
+/bin
+/lib
