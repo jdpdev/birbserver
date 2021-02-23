@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, send_from_directory, render_template
 from os import scandir, path
+from datetime import date, timedelta
 
 def create_app(test_config=None):
     picture_folder = '/media/pi/birbstorage'
@@ -25,17 +26,26 @@ def create_app(test_config=None):
         return i["time"]
 
     @app.route('/api/list')
-    def listImages():
+    @app.route('/api/list/:days')
+    def listImages(days=0):
         path = picture_folder + "/full/"
         images = []
+        offset = timedelta(days=days)
+        target = date.today() - offset
 
         with scandir(path) as pictures:
             for p in pictures:
                 if p.is_file() and p.name != 'live.jpg':
+                    fileTime = p.stat().st_ctime
+                    fileDate = date.fromtimestamp(fileTime)
+
+                    if target != fileDate:
+                        continue
+
                     images.append({
                         "name": p.name,
                         "thumb": p.name,
-                        "time": p.stat().st_ctime
+                        "time": fileTime
                     })
 
         images.sort(key=sort_images_by_time, reverse=True)
