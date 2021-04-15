@@ -12,24 +12,24 @@ function App() {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const nextPicture = () => {
-    let index = birdPics.findIndex(bp => bp.name === viewImage);
+    let index = birdPics.findIndex(bp => bp.full === viewImage.full);
     if (index < 0) return
 
     index++
 
     if (index < birdPics.length) {
-      setViewImage(birdPics[index].name)
+      setViewImage(birdPics[index])
     }
   }
 
   const previousPicture = () => {
-    let index = birdPics.findIndex(bp => bp.name === viewImage);
+    let index = birdPics.findIndex(bp => bp.full === viewImage.full);
     if (index < 0) return
 
     index--
 
     if (index > 0) {
-      setViewImage(birdPics[index].name)
+      setViewImage(birdPics[index])
     }
   }
 
@@ -39,7 +39,7 @@ function App() {
       .then(d => {
         setBirdPics(d)
 
-        const dates = d.map(bp => convertNameToDate(bp.name))
+        const dates = d.map(bp => bp.time)
         setPicDates(dates)
         setPicGroups(groupPicsByDate(d, dates))
         setTimeout(() => setUpdateTime(Date.now()), 10000)
@@ -64,7 +64,7 @@ function App() {
                   birdPics={birdPics} 
                   dates={picDates}
                   onClick={(index) => {
-                    setViewImage(birdPics[index].name)
+                    setViewImage(birdPics[index])
                     setIsViewerOpen(true)
                   }} 
                   selectedPic={viewImage}
@@ -75,7 +75,7 @@ function App() {
         </div>
       </div>
       <ImageViewer 
-        name={viewImage} 
+        image={viewImage} 
         isOpen={isViewerOpen}
         onClose={() => setIsViewerOpen(false)} 
         onNext={nextPicture}
@@ -99,7 +99,7 @@ function ImageGroup({group, birdPics, dates, onClick, selectedPic}) {
               birdPic={birdPics[g]} 
               date={dates[g]} 
               onClick={() => onClick(g)} 
-              isSelected={birdPics[g].name === selectedPic} 
+              isSelected={birdPics[g].full === selectedPic} 
             />))
         }
       </div>
@@ -113,7 +113,7 @@ function ImageListItem({birdPic, date, onClick, isSelected}) {
       className={classnames({'viewed-image': isSelected})}
       onClick={onClick}
     >
-      {birdPic.name}
+      {birdPic.full}
     </li>
   )
 }
@@ -126,17 +126,20 @@ function ImagePreviewItem({birdPic, date, onClick, isSelected}) {
       className={classes}
       onClick={onClick}
     >
-      <img src={"/thumb/" + birdPic.thumb} />
+      <img 
+        src={"/thumb/" + birdPic.thumb} 
+        alt={`${birdPic.classification[0].species} (${Math.round(birdPic.classification[0].confidence * 100)}%)`}
+      />
     </div>
   )
 }
 
-function ImageViewer({name, isOpen, onClose, onNext, onPrevious}) {
+function ImageViewer({image, isOpen, onClose, onNext, onPrevious}) {
   const close = () => {
     onClose();
   }
 
-  if (!isOpen || name == null) {
+  if (!isOpen || image == null) {
     return <div />
   }
 
@@ -147,7 +150,15 @@ function ImageViewer({name, isOpen, onClose, onNext, onPrevious}) {
         <div className='next-btn' onClick={onNext}><div>{">"}</div></div>
         <div className='image'>
           <div className='previous-btn' onClick={onPrevious}><div>{"<"}</div></div>
-          <img src={`/picture/${name}`} width="100%" />
+          <img src={`/picture/${image.full}`} width="100%" />
+        </div>
+        <div className='image-info'>
+          <div>
+            <b>{image.classification[0].species}</b> ({Math.round(image.classification[0].confidence * 100)}%)
+          </div>
+          <div>
+            1/{image.shutter} sec, ISO {image.iso}
+          </div>
         </div>
       </div>
     </div>
@@ -171,7 +182,7 @@ function groupPicsByDate(pics, dates) {
 
   for (let i = 1; i < dates.length; i++) {
     const d = dates[i]
-    const delta = differenceInSeconds(comparer, d)
+    const delta = comparer - d
 
     if (delta <= 90) {
       currentGroup.push(i)
