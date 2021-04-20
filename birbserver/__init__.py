@@ -74,14 +74,14 @@ def create_app(test_config=None):
 
     @app.route('/api/list')
     @app.route('/api/list/:days')
-    def listImages(days=0):
+    def listImages(days=1):
         path = picture_folder + "/full/"
         images = []
         offset = timedelta(days=days)
         target = datetime.today() - offset
 
         picture_range = filter(
-            lambda p: True, #p.time >= target.timestamp(),
+            lambda p: p.time >= target.timestamp(),
             picture_log
         )
         picture_range = list(picture_range)

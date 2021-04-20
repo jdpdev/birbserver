@@ -86,7 +86,7 @@ function App() {
 }
 
 function ImageGroup({group, birdPics, dates, onClick, selectedPic}) {
-  const startDate = dates[group[group.length - 1]];
+  const startDate = new Date(dates[group[group.length - 1]] * 1000);
   
   return (
     <div className='image-group'>
