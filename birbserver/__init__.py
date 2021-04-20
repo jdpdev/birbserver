@@ -46,6 +46,10 @@ def read_file_pictures(log_file):
 def make_picture_jsonable(picture: LoggedPicture):
     return picture.jsonify()
 
+def update_file_pictures(log_file, picture_log):
+    for line in log_file:
+        picture_log.append(LoggedPicture(line))
+
 def create_app(test_config=None):
     picture_folder = '/media/pi/birbstorage'
 
@@ -75,6 +79,8 @@ def create_app(test_config=None):
     @app.route('/api/list')
     @app.route('/api/list/:days')
     def listImages(days=1):
+        update_file_pictures(file_picture_log, picture_log)
+
         path = picture_folder + "/full/"
         images = []
         offset = timedelta(days=days)
