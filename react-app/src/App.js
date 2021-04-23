@@ -37,12 +37,7 @@ function App() {
     fetch('/api/list')
       .then(r => r.json())
       .then(d => {
-        setBirdPics(d)
-
-        const dates = d.map(bp => bp.time)
-        setPicDates(dates)
-        setPicGroups(groupPicsByDate(d, dates))
-        setTimeout(() => setUpdateTime(Date.now()), 10000)
+        processImageList(d, setBirdPics, setPicDates, setPicGroups, setUpdateTime);
       })
       .catch(e => setBirdPics([{error: e}]))
   }, [updateTime])
@@ -62,9 +57,8 @@ function App() {
                   key={i} 
                   group={pg}
                   birdPics={birdPics} 
-                  dates={picDates}
-                  onClick={(index) => {
-                    setViewImage(birdPics[index])
+                  onClick={pic => {
+                    setViewImage(pic)
                     setIsViewerOpen(true)
                   }} 
                   selectedPic={viewImage}
@@ -85,8 +79,19 @@ function App() {
   );
 }
 
+export function processImageList(d, setBirdPics, setPicDates, setPicGroups, setUpdateTime) {
+  setBirdPics(d)
+
+  setPicGroups(groupPicsByDate(d))
+  setTimeout(() => setUpdateTime(Date.now()), 10000)
+}
+
 function ImageGroup({group, birdPics, dates, onClick, selectedPic}) {
-  const startDate = new Date(dates[group[group.length - 1]] * 1000);
+  const startDate = new Date(group[0].time * 1000);
+
+  if (startDate == null) {
+    return <div className='image-group'>ERROR!</div>
+  }
   
   return (
     <div className='image-group'>
@@ -95,11 +100,10 @@ function ImageGroup({group, birdPics, dates, onClick, selectedPic}) {
         {  
           group.map(g => (
             <ImagePreviewItem 
-              key={g}
-              birdPic={birdPics[g]} 
-              date={dates[g]} 
+              key={g.full}
+              birdPic={g}  
               onClick={() => onClick(g)} 
-              isSelected={birdPics[g].full === selectedPic} 
+              isSelected={selectedPic && g && g.full === selectedPic.full} 
             />))
         }
       </div>
@@ -126,10 +130,14 @@ function ImagePreviewItem({birdPic, date, onClick, isSelected}) {
       className={classes}
       onClick={onClick}
     >
-      <img 
-        src={"/thumb/" + birdPic.thumb} 
-        alt={`${birdPic.classification[0].species} (${Math.round(birdPic.classification[0].confidence * 100)}%)`}
-      />
+      {
+        birdPic != null ?
+        <img 
+          src={"/thumb/" + birdPic.thumb} 
+          alt={`${birdPic.classification[0].species} (${Math.round(birdPic.classification[0].confidence * 100)}%)`}
+        /> :
+        "error"
+      }
     </div>
   )
 }
@@ -171,32 +179,34 @@ function convertNameToDate(name) {
   return parsed;
 }
 
-function groupPicsByDate(pics, dates) {
+function groupPicsByDate(pics) {
+  console.log(`[groupPicsByDate] pic count: ${pics.length}`)
+
   if (pics.length === 0) {
     return [];
   }
 
-  let comparer = dates[0]
-  let currentGroup = [0]
+  let comparer = pics[0]
+  let currentGroup = [comparer]
   const groups = []
 
-  for (let i = 1; i < dates.length; i++) {
-    const d = dates[i]
-    const delta = comparer - d
+  for (let i = 1; i < pics.length; i++) {
+    const d = pics[i]
+    const delta = comparer.time - d.time
 
     if (delta <= 90) {
-      currentGroup.push(i)
+      currentGroup.push(d)
       comparer = d
     } else {
       groups.push(currentGroup)
-      currentGroup = [i]
+      currentGroup = [d]
       comparer = d
-      i++
     }
   }
 
   groups.push(currentGroup)
 
+  console.log(groups)
   return groups;
 }
 
