@@ -1,0 +1,19 @@
+.preview-sizer {
+    width: 100%;
+    flex: 0 0 auto;
+
+    display: flex;
+}
+
+.preview-sizer .sizer-item {
+    flex: 0 0 45px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px;
+    margin: 4px;
+}
+
+.preview-sizer .sizer-item.selected {
+    background-color: #0cf;
+    border-color: #07a;
+}

@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import classnames from 'classnames'
 import {parse, differenceInSeconds, format} from 'date-fns'
 import "./App.css"
+import { PreviewSizer, PreviewSizes } from './PreviewSizer';
 
 function App() {
   const [birdPics, setBirdPics] = useState([]);
@@ -10,6 +11,7 @@ function App() {
   const [viewImage, setViewImage] = useState(null);
   const [updateTime, setUpdateTime] = useState(Date.now())
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [previewSize, setPreviewSize] = useState(PreviewSizes.SMALL);
 
   const nextPicture = () => {
     let index = birdPics.findIndex(bp => bp.full === viewImage.full);
@@ -50,7 +52,11 @@ function App() {
           {new Date(updateTime).toLocaleString()}
         </div>
         <div className="right">
-          <ul>
+          <PreviewSizer 
+            previewSize={previewSize}
+            onSetPreviewSize={setPreviewSize}
+          />
+          <ul className="preview-scroll">
             {
               picGroups.length > 0 && picGroups.map((pg, i) => (
                 <ImageGroup 
@@ -62,6 +68,7 @@ function App() {
                     setIsViewerOpen(true)
                   }} 
                   selectedPic={viewImage}
+                  previewSize={previewSize}
                 />
               ))
             }
@@ -86,7 +93,7 @@ export function processImageList(d, setBirdPics, setPicDates, setPicGroups, setU
   setTimeout(() => setUpdateTime(Date.now()), 10000)
 }
 
-function ImageGroup({group, birdPics, dates, onClick, selectedPic}) {
+function ImageGroup({group, birdPics, dates, onClick, selectedPic, previewSize}) {
   const startDate = new Date(group[0].time * 1000);
 
   if (startDate == null) {
@@ -104,6 +111,7 @@ function ImageGroup({group, birdPics, dates, onClick, selectedPic}) {
               birdPic={g}  
               onClick={() => onClick(g)} 
               isSelected={selectedPic && g && g.full === selectedPic.full} 
+              previewSize={previewSize}
             />))
         }
       </div>
@@ -122,8 +130,8 @@ function ImageListItem({birdPic, date, onClick, isSelected}) {
   )
 }
 
-function ImagePreviewItem({birdPic, date, onClick, isSelected}) {
-  const classes = classnames('image-preview-item', {'is-selected': isSelected});
+function ImagePreviewItem({birdPic, date, onClick, isSelected, previewSize}) {
+  const classes = classnames('image-preview-item', previewSize, {'is-selected': isSelected});
   
   return (
     <div 
