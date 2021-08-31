@@ -2,6 +2,7 @@ from flask import Flask, jsonify, send_from_directory, render_template
 from os import scandir, path
 from datetime import date, datetime, timedelta
 from json import JSONEncoder
+import configparser
 
 class ClassifyResult:
     def __init__(self, result):
@@ -51,7 +52,10 @@ def update_file_pictures(log_file, picture_log):
         picture_log.append(LoggedPicture(line))
 
 def create_app(test_config=None):
-    picture_folder = '/media/pi/birbstorage'
+    config = configparser.ConfigParser()
+    config.read(f"{path.dirname(path.realpath(__file__))}/../config.ini")
+
+    picture_folder = config["Birbcam"]["Storage"]
 
     app = Flask(__name__, 
                 static_folder=picture_folder,

@@ -5,6 +5,7 @@
 /debug
 /birbwatcher
 /bin
+/bin/*
 /lib
 nohup.out
 birbserver/__pycache__/
